@@ -24,18 +24,18 @@ function AppointmentSlot({
 }: AppointmentSlotProps) {
   const isBooked = appointment?.status === "booked";
   const isAvailable = appointment?.status === "available";
-  const appointmentClasses = `p-2 space-y-3 m-1 h-32 text-left ${
+  const appointmentClasses = `p-2 space-y-3 m-1 h-32 text-left transition duration-200 ease-out hover:ease-in ${
     isBooked
-      ? "bg-blue-100 rounded-md"
+      ? "bg-blue-100 rounded-md shadow hover:shadow-xl shadow-blue-100 hover:shadow-blue-100 border border-blue-300  "
       : isAvailable
-      ? "bg-green-100 rounded-md"
+      ? "bg-green-100 rounded-md shadow hover:shadow-xl shadow-green-100 hover:shadow-green-100 border border-green-300 "
       : ""
   } ${appointment ? "hover:cursor-pointer" : ""}`;
-  const statusClasses = `w-min rounded-md px-1 text-sm ${
+  const statusClasses = `w-min rounded-md px-1 text-sm font-semibold  ${
     isBooked
-      ? "text-blue-600 bg-blue-300"
+      ? "text-blue-600 bg-blue-300 shadow-sm shadow-blue-300 border border-blue-400 "
       : isAvailable
-      ? "text-green-800 bg-green-300"
+      ? "text-green-800 bg-green-300 shadow-sm shadow-green-300 border border-green-400"
       : ""
   }`;
 
@@ -49,7 +49,7 @@ function AppointmentSlot({
   return (
     <div>
       <div onClick={handleAppointmentClick} className={appointmentClasses}>
-        <div className="flex justify-between">
+        <div className="flex justify-between ">
           <div className="font-semibold text-gray-800">
             {appointment?.provider}
           </div>
