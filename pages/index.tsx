@@ -1,47 +1,19 @@
-import { defaultAppointments } from "@/utils/data";
+import React, { useEffect, useState } from "react";
+import { Calendar, Clock } from "react-feather";
 import {
   addMinutes,
   format,
-  startOfWeek,
-  addDays,
   isSameDay,
   startOfToday,
   differenceInMinutes,
-  startOfDay,
 } from "date-fns";
-import React, { useEffect, useState } from "react";
-import { Calendar, Clock } from "react-feather";
 
-interface Appointment {
-  provider?: string;
-  service?: string;
-  slot?: string;
-  status?: string;
-}
-
-interface AppointmentSlotProps {
-  appointment?: Appointment;
-  setOpenBookingConfirmationDialog: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
-  setSelectedAppointment: React.Dispatch<
-    React.SetStateAction<Appointment | undefined>
-  >;
-}
-
-interface BookingConfirmationDialogProps {
-  setOpenBookingConfirmationDialog: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
-  selectedAppointment?: Appointment;
-  setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
-}
-
-interface TextAreaProps {
-  label: string;
-  value?: string;
-  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-}
+import { Appointment } from "@/interfaces/Appointment";
+import { AppointmentSlotProps } from "@/interfaces/AppointmentSlotProps";
+import { BookingConfirmationDialogProps } from "@/interfaces/BookingConfirmationDialogProps";
+import { TextAreaProps } from "@/interfaces/TextAreaProps";
+import { generateSlotsForWeek, getSlots } from "@/utils/helpers";
+import { defaultAppointments } from "@/utils/data";
 
 function AppointmentSlot({
   appointment,
@@ -65,33 +37,7 @@ function AppointmentSlot({
       : ""
   }`;
 
-  const handleClick = () => {
-    // setAppointments((prev: Appointment[]) => {
-    //   if (typeof window !== "undefined") {
-    //     localStorage.setItem(
-    //       "appointments",
-    //       JSON.stringify([
-    //         ...prev,
-    //         {
-    //           slot,
-    //           provider: "saurabh",
-    //           service: "only bangs",
-    //           status: "available",
-    //         },
-    //       ])
-    //     );
-    //   }
-
-    //   return [
-    //     ...prev,
-    //     {
-    //       provider: "saurabh",
-    //       service: "only bangs",
-    //       status: "booked",
-    //     },
-    //   ];
-    // });
-
+  const handleAppointmentClick = () => {
     if (appointment) {
       setOpenBookingConfirmationDialog(true);
       setSelectedAppointment(appointment);
@@ -100,7 +46,7 @@ function AppointmentSlot({
 
   return (
     <div>
-      <div onClick={handleClick} className={appointmentClasses}>
+      <div onClick={handleAppointmentClick} className={appointmentClasses}>
         <div className="flex justify-between">
           <div className="font-semibold text-gray-800">
             {appointment?.provider}
@@ -298,7 +244,6 @@ function HourCell({ slot }: { slot: Date }) {
 
 export default function WeeklyCalendar() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment>();
   const [openBookingConfirmationDialog, setOpenBookingConfirmationDialog] =
     useState<boolean>(false);
@@ -315,37 +260,6 @@ export default function WeeklyCalendar() {
       setAppointments(defaultAppointments);
     }
   }, []);
-
-  // Generate slots for each day of the week
-  const generateSlotsForWeek = () => {
-    const today = new Date();
-    const weekStart = startOfWeek(today);
-    const days: Date[] = [];
-    const slots: Date[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      const day = addDays(weekStart, i);
-      days.push(day);
-
-      slots.push(...getSlots(day));
-    }
-
-    return { days, slots };
-  };
-
-  // Get slots for a given day
-  const getSlots = (day: Date) => {
-    const slots: Date[] = [];
-    let slot = startOfDay(day);
-
-    for (let i = 0; i < 32; i++) {
-      slots.push(slot);
-
-      slot = addMinutes(slot, 45);
-    }
-
-    return slots;
-  };
 
   const { days, slots } = generateSlotsForWeek();
 
