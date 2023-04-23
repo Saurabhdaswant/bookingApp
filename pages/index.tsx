@@ -221,18 +221,19 @@ const BookingConfirmationDialog = ({
                 <div className="flex justify-end gap-x-4  ">
                   <button
                     role="button"
-                    aria-label="Cancel booking confirmation"
+                    aria-label="Cancel booking"
                     onClick={() => setOpenBookingConfirmationDialog(false)}
                     className="   font-semibold    text-[#2E2E2E] hover:bg-gray-100 px-8 rounded py-4 "
                   >
                     Cancel
                   </button>
                   <button
-                    role="Confirm booking"
+                    role="button"
+                    aria-label="Confirm booking"
                     onClick={() => handleBookingConfirmation()}
                     className="   font-semibold  bg-[#2e2e2e] hover:bg-[#2e2e2eed] text-white px-8 rounded py-4 "
                   >
-                    Confirm{" "}
+                    Book now
                   </button>
                 </div>
               </div>
@@ -247,11 +248,20 @@ const BookingConfirmationDialog = ({
                 />
                 <div className="flex justify-end gap-x-4  ">
                   <button
+                    role="button"
+                    aria-label="Close booking confirmation"
+                    onClick={() => setOpenBookingConfirmationDialog(false)}
+                    className="   font-semibold    text-[#2E2E2E] hover:bg-gray-100 px-8 rounded py-4 "
+                  >
+                    Close
+                  </button>
+                  <button
+                    role="button"
+                    aria-label="Cancel your booked appointment"
                     onClick={() => handleBookingCancellation()}
-                    type="submit"
                     className="   font-semibold  bg-red-500 hover:bg-red-400 text-white px-8 rounded py-4 "
                   >
-                    Cancel{" "}
+                    cancel appointment
                   </button>
                 </div>
               </div>
