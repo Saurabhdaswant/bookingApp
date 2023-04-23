@@ -14,6 +14,8 @@ import { BookingConfirmationDialogProps } from "@/interfaces/BookingConfirmation
 import { TextAreaProps } from "@/interfaces/TextAreaProps";
 import { generateSlotsForWeek, getSlots } from "@/utils/helpers";
 import { defaultAppointments } from "@/utils/data";
+import { RemoveScroll } from "react-remove-scroll";
+import ReactFocusLock from "react-focus-lock";
 
 function AppointmentSlot({
   appointment,
@@ -152,81 +154,112 @@ const BookingConfirmationDialog = ({
   const startTime = new Date(slot);
   const endTime = addMinutes(startTime, 45);
 
-  return (
-    <div className=" fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-gray-900 bg-opacity-50 ">
-      <div className="bg-white p-8 rounded-lg space-y-10  ">
-        <div className="space-y-6  text-gray-600 ">
-          <div>
-            <p className=" text-lg font-semibold ">{provider} </p>
-            <p className=" text-gray-800   font-bold text-2xl ">{service}</p>
-          </div>
+  useEffect(() => {
+    function handleKeyDown(event: any) {
+      if (event.code === "Escape") {
+        setOpenBookingConfirmationDialog(false);
+      }
+    }
 
-          <div className="space-y-4  font-semibold">
-            <div className="flex gap-2">
-              <Calendar className="w-6 h-6" />{" "}
-              <div className="flex gap-2">
-                <p className="text-gray-800 font-bold ">
-                  {format(startTime, "h:mm aaa")}
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [setOpenBookingConfirmationDialog]);
+
+  return (
+    <RemoveScroll>
+      <ReactFocusLock>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="booking-confirmation-dialog"
+          className="fixed inset-0 grid place-content-center p-16"
+        >
+          <div
+            onClick={() => setOpenBookingConfirmationDialog(false)}
+            className="absolute inset-0 bg-black/75"
+          ></div>
+          <div className=" z-50 bg-white p-8 rounded-lg space-y-10  ">
+            <div className="space-y-6  text-gray-600 ">
+              <div>
+                <p className=" text-lg font-semibold ">{provider} </p>
+                <p className=" text-gray-800   font-bold text-2xl ">
+                  {service}
                 </p>
-                {`-`}
-                <p className="text-gray-800 font-bold ">
-                  {format(endTime, "h:mm aaa")},
-                </p>
-                <p>{format(startTime, "PPPP")}</p>
+              </div>
+
+              <div className="space-y-4  font-semibold">
+                <div className="flex gap-2">
+                  <Calendar className="w-6 h-6" />{" "}
+                  <div className="flex gap-2">
+                    <p className="text-gray-800 font-bold ">
+                      {format(startTime, "h:mm aaa")}
+                    </p>
+                    {`-`}
+                    <p className="text-gray-800 font-bold ">
+                      {format(endTime, "h:mm aaa")},
+                    </p>
+                    <p>{format(startTime, "PPPP")}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Clock />{" "}
+                  <p>{differenceInMinutes(endTime, startTime)} Minutes</p>
+                </div>
               </div>
             </div>
+            {status === "available" && (
+              <div className="space-y-6">
+                <TextArea
+                  label="Additional notes  "
+                  value={inputValue}
+                  onChange={handleInputChange}
+                />
+                <div className="flex justify-end gap-x-4  ">
+                  <button
+                    role="button"
+                    aria-label="Cancel booking confirmation"
+                    onClick={() => setOpenBookingConfirmationDialog(false)}
+                    className="   font-semibold    text-[#2E2E2E] hover:bg-gray-100 px-8 rounded py-4 "
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    role="Confirm booking"
+                    onClick={() => handleBookingConfirmation()}
+                    className="   font-semibold  bg-[#2e2e2e] hover:bg-[#2e2e2eed] text-white px-8 rounded py-4 "
+                  >
+                    Confirm{" "}
+                  </button>
+                </div>
+              </div>
+            )}
 
-            <div className="flex gap-2">
-              <Clock /> <p>{differenceInMinutes(endTime, startTime)} Minutes</p>
-            </div>
+            {status === "booked" && (
+              <div className="space-y-6">
+                <TextArea
+                  label="Additional notes"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                />
+                <div className="flex justify-end gap-x-4  ">
+                  <button
+                    onClick={() => handleBookingCancellation()}
+                    type="submit"
+                    className="   font-semibold  bg-red-500 hover:bg-red-400 text-white px-8 rounded py-4 "
+                  >
+                    Cancel{" "}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        {status === "available" && (
-          <div className="space-y-6">
-            <TextArea
-              label="Additional notes  "
-              value={inputValue}
-              onChange={handleInputChange}
-            />
-            <div className="flex justify-end gap-x-4  ">
-              <button
-                onClick={() => setOpenBookingConfirmationDialog(false)}
-                type="submit"
-                className="   font-semibold    text-[#2E2E2E] hover:bg-gray-100 px-8 rounded py-4 "
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleBookingConfirmation()}
-                type="submit"
-                className="   font-semibold  bg-[#2e2e2e] hover:bg-[#2e2e2eed] text-white px-8 rounded py-4 "
-              >
-                Confirm{" "}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {status === "booked" && (
-          <div className="space-y-6">
-            <TextArea
-              label="Additional notes"
-              value={inputValue}
-              onChange={handleInputChange}
-            />
-            <div className="flex justify-end gap-x-4  ">
-              <button
-                onClick={() => handleBookingCancellation()}
-                type="submit"
-                className="   font-semibold  bg-red-500 hover:bg-red-400 text-white px-8 rounded py-4 "
-              >
-                Cancel{" "}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      </ReactFocusLock>
+    </RemoveScroll>
   );
 };
 
