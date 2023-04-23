@@ -1,118 +1,402 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import {
+  addMinutes,
+  format,
+  startOfWeek,
+  addDays,
+  isSameDay,
+  startOfToday,
+  differenceInMinutes,
+  startOfDay,
+} from "date-fns";
+import React, { useEffect, useState } from "react";
+import { Calendar, Clock } from "react-feather";
 
-const inter = Inter({ subsets: ['latin'] })
+interface Appointment {
+  provider?: string;
+  service?: string;
+  slot?: string;
+  status?: string;
+}
 
-export default function Home() {
+interface AppointmentSlotProps {
+  appointment?: Appointment;
+  setOpenBookingConfirmationDialog: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  setSelectedAppointment: React.Dispatch<
+    React.SetStateAction<Appointment | undefined>
+  >;
+}
+
+interface BookingConfirmationDialogProps {
+  setOpenBookingConfirmationDialog: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  selectedAppointment?: Appointment;
+  setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
+}
+
+interface TextAreaProps {
+  label: string;
+  value?: string;
+  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}
+
+function AppointmentSlot({
+  appointment,
+  setOpenBookingConfirmationDialog,
+  setSelectedAppointment,
+}: AppointmentSlotProps) {
+  const isBooked = appointment?.status === "booked";
+  const isAvailable = appointment?.status === "available";
+  const appointmentClasses = `p-2 space-y-3 m-1 h-32 text-left ${
+    isBooked
+      ? "bg-blue-100 rounded-md"
+      : isAvailable
+      ? "bg-green-100 rounded-md"
+      : ""
+  } ${appointment ? "hover:cursor-pointer" : ""}`;
+  const statusClasses = `w-min rounded-md px-1 text-sm ${
+    isBooked
+      ? "text-blue-600 bg-blue-300"
+      : isAvailable
+      ? "text-green-800 bg-green-300"
+      : ""
+  }`;
+
+  const handleClick = () => {
+    // setAppointments((prev: Appointment[]) => {
+    //   if (typeof window !== "undefined") {
+    //     localStorage.setItem(
+    //       "appointments",
+    //       JSON.stringify([
+    //         ...prev,
+    //         {
+    //           slot,
+    //           provider: "saurabh",
+    //           service: "only bangs",
+    //           status: "available",
+    //         },
+    //       ])
+    //     );
+    //   }
+
+    //   return [
+    //     ...prev,
+    //     {
+    //       provider: "saurabh",
+    //       service: "only bangs",
+    //       status: "booked",
+    //     },
+    //   ];
+    // });
+
+    if (appointment) {
+      setOpenBookingConfirmationDialog(true);
+      setSelectedAppointment(appointment);
+    }
+  };
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div>
+      <div onClick={handleClick} className={appointmentClasses}>
+        <div className="flex justify-between">
+          <div className="font-semibold text-gray-800">
+            {appointment?.provider}
+          </div>
+          <div className={statusClasses}>{appointment?.status}</div>
+        </div>
+        <div className="text-sm break-words text-gray-800">
+          {appointment?.service}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+const TextArea = ({ label, value, onChange }: TextAreaProps) => {
+  return (
+    <div>
+      <label
+        className="block text-gray-700 font-semibold text-sm mb-2"
+        htmlFor="textarea"
+      >
+        {label}
+      </label>
+      <textarea
+        className={`appearance-none  border-2 rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+        id="textarea"
+        value={value}
+        onChange={onChange}
+        rows={4}
+        cols={50}
+      />
+    </div>
+  );
+};
+
+const BookingConfirmationDialog = ({
+  setOpenBookingConfirmationDialog,
+  selectedAppointment,
+  setAppointments,
+}: BookingConfirmationDialogProps) => {
+  const {
+    slot = "",
+    provider = "",
+    status = "",
+    service = "",
+  } = selectedAppointment || {};
+  const [inputValue, setInputValue] = useState("");
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  const selectedSlotTime = new Date(slot).getTime();
+
+  const updateAppointment = (
+    appointments: Appointment[],
+    time: Date,
+    status: string
+  ): Appointment[] => {
+    const index = appointments.findIndex(
+      (appointment: Appointment) =>
+        new Date(appointment.slot || "").getTime() === time.getTime()
+    );
+    const updatedAppointments: Appointment[] = [...appointments];
+
+    updatedAppointments[index] = {
+      ...updatedAppointments[index],
+      status: status,
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("appointments", JSON.stringify(updatedAppointments));
+    }
+
+    return updatedAppointments;
+  };
+
+  const handleBookingConfirmation = () => {
+    setAppointments((prevAppointments: Appointment[]) => {
+      const updatedAppointments = updateAppointment(
+        prevAppointments,
+        new Date(selectedSlotTime),
+        "booked"
+      );
+
+      return updatedAppointments;
+    });
+    setOpenBookingConfirmationDialog(false);
+  };
+
+  const handleBookingCancellation = () => {
+    setAppointments((prevAppointments: Appointment[]) => {
+      const updatedAppointments = updateAppointment(
+        prevAppointments,
+        new Date(selectedSlotTime),
+        "available"
+      );
+      return updatedAppointments;
+    });
+    setOpenBookingConfirmationDialog(false);
+  };
+
+  const startTime = new Date(slot);
+  const endTime = addMinutes(startTime, 45);
+
+  return (
+    <div className=" fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-gray-900 bg-opacity-50 ">
+      <div className="bg-white p-8 rounded-lg space-y-10  ">
+        <div className="space-y-6  text-gray-600 ">
+          <div>
+            <p className=" text-lg font-semibold ">{provider} </p>
+            <p className=" text-gray-800   font-bold text-2xl ">{service}</p>
+          </div>
+
+          <div className="space-y-4  font-semibold">
+            <div className="flex gap-2">
+              <Calendar className="w-6 h-6" />{" "}
+              <div className="flex gap-2">
+                <p className="text-gray-800 font-bold ">
+                  {format(startTime, "h:mm aaa")}
+                </p>
+                {`-`}
+                <p className="text-gray-800 font-bold ">
+                  {format(endTime, "h:mm aaa")},
+                </p>
+                <p>{format(startTime, "PPPP")}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Clock /> <p>{differenceInMinutes(endTime, startTime)} Minutes</p>
+            </div>
+          </div>
+        </div>
+        {status === "available" && (
+          <div className="space-y-6">
+            <TextArea
+              label="Additional notes  "
+              value={inputValue}
+              onChange={handleInputChange}
+            />
+            <div className="flex justify-end gap-x-4  ">
+              <button
+                onClick={() => setOpenBookingConfirmationDialog(false)}
+                type="submit"
+                className="   font-semibold    text-[#2E2E2E] hover:bg-gray-100 px-8 rounded py-4 "
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleBookingConfirmation()}
+                type="submit"
+                className="   font-semibold  bg-[#2e2e2e] hover:bg-[#2e2e2eed] text-white px-8 rounded py-4 "
+              >
+                Confirm{" "}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === "booked" && (
+          <div className="space-y-6">
+            <TextArea
+              label="Additional notes"
+              value={inputValue}
+              onChange={handleInputChange}
+            />
+            <div className="flex justify-end gap-x-4  ">
+              <button
+                onClick={() => handleBookingCancellation()}
+                type="submit"
+                className="   font-semibold  bg-red-500 hover:bg-red-400 text-white px-8 rounded py-4 "
+              >
+                Cancel{" "}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+function HourCell({ slot }: { slot: Date }) {
+  return (
+    <div>
+      <div className={` px-2 m-1 h-32  `}>
+        <div className="text-xs text-right font-semibold ">
+          {format(slot, "h:mm a")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function WeeklyCalendar() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment>();
+  const [openBookingConfirmationDialog, setOpenBookingConfirmationDialog] =
+    useState<boolean>(false);
+
+  // Fetch appointments from local storage when component mounts
+  useEffect(() => {
+    const storedAppointments = JSON.parse(
+      localStorage.getItem("appointments") || "[]"
+    ) as Appointment[];
+    if (storedAppointments) {
+      setAppointments(storedAppointments);
+    }
+  }, []);
+
+  // Generate slots for each day of the week
+  const generateSlotsForWeek = () => {
+    const today = new Date();
+    const weekStart = startOfWeek(today);
+    const days: Date[] = [];
+    const slots: Date[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = addDays(weekStart, i);
+      days.push(day);
+
+      slots.push(...getSlots(day));
+    }
+
+    return { days, slots };
+  };
+
+  // Get slots for a given day
+  const getSlots = (day: Date) => {
+    const slots: Date[] = [];
+    let slot = startOfDay(day);
+
+    for (let i = 0; i < 32; i++) {
+      slots.push(slot);
+
+      slot = addMinutes(slot, 45);
+    }
+
+    return slots;
+  };
+
+  const { days, slots } = generateSlotsForWeek();
+
+  return (
+    <div className="grid grid-cols-8 ">
+      <div
+        key={startOfToday().toISOString()}
+        className=" border border-gray-100"
+      >
+        <div className="h-11"></div>
+        <div className="divide-y-2 divide-gray-100 divide-opacity-0 ">
+          {getSlots(startOfToday()).map((slot) => {
+            return <HourCell key={slot.toISOString()} slot={slot} />;
+          })}
+        </div>
+      </div>
+      {days.map((day) => (
+        <div
+          key={day.toISOString()}
+          className="text-center border border-gray-100"
+        >
+          <div className="flex justify-center py-4  border-b border-gray-100  gap-2">
+            <div className="font-bold">{format(day, "E")}</div>
+            <div>{format(day, "d")}</div>
+          </div>
+          <div className="divide-y-2 divide-gray-100 ">
+            {slots
+              .filter((slot) => isSameDay(slot, day))
+              .map((slot) => {
+                const appointment = appointments?.find(
+                  (appointment: Appointment) =>
+                    new Date(appointment.slot ?? "").getTime() ===
+                    new Date(slot).getTime()
+                );
+
+                return (
+                  <AppointmentSlot
+                    key={slot.toISOString()}
+                    appointment={appointment}
+                    setOpenBookingConfirmationDialog={
+                      setOpenBookingConfirmationDialog
+                    }
+                    setSelectedAppointment={setSelectedAppointment}
+                  />
+                );
+              })}
+          </div>
+        </div>
+      ))}
+      {openBookingConfirmationDialog && (
+        <BookingConfirmationDialog
+          setOpenBookingConfirmationDialog={setOpenBookingConfirmationDialog}
+          selectedAppointment={selectedAppointment}
+          setAppointments={setAppointments}
         />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+      )}
+    </div>
+  );
 }
