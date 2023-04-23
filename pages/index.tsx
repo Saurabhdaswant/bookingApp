@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Calendar, Clock } from "react-feather";
 import {
   addMinutes,
@@ -16,6 +16,9 @@ import { generateSlotsForWeek, getSlots } from "@/utils/helpers";
 import { defaultAppointments } from "@/utils/data";
 import { RemoveScroll } from "react-remove-scroll";
 import ReactFocusLock from "react-focus-lock";
+import ToastProvider, { ToastContext } from "@/components/Toast/ToastProvider";
+import ToastShelf from "@/components/Toast/ToastShelf";
+import { success } from "@/utils/contants";
 
 function AppointmentSlot({
   appointment,
@@ -96,6 +99,7 @@ const BookingConfirmationDialog = ({
     service = "",
   } = selectedAppointment || {};
   const [inputValue, setInputValue] = useState("");
+  const { handleCreateToast } = useContext(ToastContext);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
@@ -136,6 +140,10 @@ const BookingConfirmationDialog = ({
 
       return updatedAppointments;
     });
+    handleCreateToast(
+      "Great news! Your appointment has been scheduled",
+      success
+    );
     setOpenBookingConfirmationDialog(false);
   };
 
@@ -148,6 +156,8 @@ const BookingConfirmationDialog = ({
       );
       return updatedAppointments;
     });
+
+    handleCreateToast("Your appointment has been canceled.", success);
     setOpenBookingConfirmationDialog(false);
   };
 
@@ -307,58 +317,62 @@ export default function WeeklyCalendar() {
   const { days, slots } = generateSlotsForWeek();
 
   return (
-    <div className="grid grid-cols-8 ">
-      <div
-        key={startOfToday().toISOString()}
-        className=" border border-gray-100"
-      >
-        <div className="h-11"></div>
-        <div className="divide-y-2 divide-gray-100 divide-opacity-0 ">
-          {getSlots(startOfToday()).map((slot) => {
-            return <HourCell key={slot.toISOString()} slot={slot} />;
-          })}
-        </div>
-      </div>
-      {days.map((day) => (
-        <div
-          key={day.toISOString()}
-          className="text-center border border-gray-100"
-        >
-          <div className="flex justify-center py-4  border-b border-gray-100  gap-2">
-            <div className="font-bold">{format(day, "E")}</div>
-            <div>{format(day, "d")}</div>
-          </div>
-          <div className="divide-y-2 divide-gray-100 ">
-            {slots
-              .filter((slot) => isSameDay(slot, day))
-              .map((slot) => {
-                const appointment = appointments?.find(
-                  (appointment: Appointment) =>
-                    new Date(appointment.slot ?? "").getTime() ===
-                    new Date(slot).getTime()
-                );
+    <ToastProvider>
+      <ToastShelf />
 
-                return (
-                  <AppointmentSlot
-                    key={slot.toISOString()}
-                    appointment={appointment}
-                    setOpenBookingConfirmationDialog={
-                      setOpenBookingConfirmationDialog
-                    }
-                    setSelectedAppointment={setSelectedAppointment}
-                  />
-                );
-              })}
+      <div className="grid grid-cols-8 ">
+        <div
+          key={startOfToday().toISOString()}
+          className=" border border-gray-100"
+        >
+          <div className="h-11"></div>
+          <div className="divide-y-2 divide-gray-100 divide-opacity-0 ">
+            {getSlots(startOfToday()).map((slot) => {
+              return <HourCell key={slot.toISOString()} slot={slot} />;
+            })}
           </div>
         </div>
-      ))}
-      {openBookingConfirmationDialog && (
-        <BookingConfirmationDialog
-          setOpenBookingConfirmationDialog={setOpenBookingConfirmationDialog}
-          selectedAppointment={selectedAppointment}
-          setAppointments={setAppointments}
-        />
-      )}
-    </div>
+        {days.map((day) => (
+          <div
+            key={day.toISOString()}
+            className="text-center border border-gray-100"
+          >
+            <div className="flex justify-center py-4  border-b border-gray-100  gap-2">
+              <div className="font-bold">{format(day, "E")}</div>
+              <div>{format(day, "d")}</div>
+            </div>
+            <div className="divide-y-2 divide-gray-100 ">
+              {slots
+                .filter((slot) => isSameDay(slot, day))
+                .map((slot) => {
+                  const appointment = appointments?.find(
+                    (appointment: Appointment) =>
+                      new Date(appointment.slot ?? "").getTime() ===
+                      new Date(slot).getTime()
+                  );
+
+                  return (
+                    <AppointmentSlot
+                      key={slot.toISOString()}
+                      appointment={appointment}
+                      setOpenBookingConfirmationDialog={
+                        setOpenBookingConfirmationDialog
+                      }
+                      setSelectedAppointment={setSelectedAppointment}
+                    />
+                  );
+                })}
+            </div>
+          </div>
+        ))}
+        {openBookingConfirmationDialog && (
+          <BookingConfirmationDialog
+            setOpenBookingConfirmationDialog={setOpenBookingConfirmationDialog}
+            selectedAppointment={selectedAppointment}
+            setAppointments={setAppointments}
+          />
+        )}
+      </div>
+    </ToastProvider>
   );
 }
