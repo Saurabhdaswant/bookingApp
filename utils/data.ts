@@ -1,4 +1,4 @@
-export const currAppointments = [
+export const defaultAppointments = [
   {
     slot: "2023-04-22T18:30:00.000Z",
     provider: "Saurabh",

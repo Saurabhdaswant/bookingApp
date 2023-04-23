@@ -1,4 +1,4 @@
-import { currAppointments } from "@/utils/data";
+import { defaultAppointments } from "@/utils/data";
 import {
   addMinutes,
   format,
@@ -312,7 +312,7 @@ export default function WeeklyCalendar() {
     if (storedAppointments.length > 0) {
       setAppointments(storedAppointments);
     } else {
-      setAppointments(currAppointments);
+      setAppointments(defaultAppointments);
     }
   }, []);
 
