@@ -1,3 +1,4 @@
+import { currAppointments } from "@/utils/data";
 import {
   addMinutes,
   format,
@@ -297,6 +298,7 @@ function HourCell({ slot }: { slot: Date }) {
 
 export default function WeeklyCalendar() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment>();
   const [openBookingConfirmationDialog, setOpenBookingConfirmationDialog] =
     useState<boolean>(false);
@@ -306,8 +308,11 @@ export default function WeeklyCalendar() {
     const storedAppointments = JSON.parse(
       localStorage.getItem("appointments") || "[]"
     ) as Appointment[];
-    if (storedAppointments) {
+
+    if (storedAppointments.length > 0) {
       setAppointments(storedAppointments);
+    } else {
+      setAppointments(currAppointments);
     }
   }, []);
 
